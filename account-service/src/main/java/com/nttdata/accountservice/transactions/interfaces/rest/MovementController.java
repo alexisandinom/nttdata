@@ -30,11 +30,7 @@ public class MovementController {
     public Mono<ResponseEntity<TransactionResponseDTO>> getMovement(@PathVariable String id) {
         logger.info("Getting movement with id: {}", id);
         return movementManager.getMovement(id)
-                .map(ResponseEntity::ok)
-                .onErrorResume(e -> {
-                    logger.error("Error getting movement: {}", e.getMessage());
-                    return Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
-                });
+                .map(ResponseEntity::ok);
     }
 
     @PostMapping
@@ -44,12 +40,7 @@ public class MovementController {
         logger.info("Creating movement for account: {}, type: {}, value: {}", 
                 request.getAccount(), request.getType(), request.getValue());
         return movementManager.storeMovement(request)
-                .map(movement -> ResponseEntity.status(HttpStatus.CREATED).body(movement))
-                .onErrorResume(e -> {
-                    logger.error("Error creating movement: {}", e.getMessage());
-                    return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                            .body((TransactionResponseDTO) null));
-                });
+                .map(movement -> ResponseEntity.status(HttpStatus.CREATED).body(movement));
     }
 }
 

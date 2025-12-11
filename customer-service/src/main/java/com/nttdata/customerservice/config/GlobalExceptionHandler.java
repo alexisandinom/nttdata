@@ -1,6 +1,8 @@
 package com.nttdata.customerservice.config;
 
 import com.nttdata.core.application.ErrorResponse;
+import com.nttdata.core.exceptions.EntityNotFoundException;
+import com.nttdata.core.exceptions.InvalidArgumentException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -17,6 +19,22 @@ import java.util.Map;
 public class GlobalExceptionHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    public Mono<ResponseEntity<ErrorResponse>> handleEntityNotFound(EntityNotFoundException ex) {
+        logger.warn("Entity not found: {}", ex.getMessage());
+        return Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ErrorResponse(ex.getMessage(), null)));
+    }
+
+    @ExceptionHandler(InvalidArgumentException.class)
+    public Mono<ResponseEntity<ErrorResponse>> handleInvalidArgument(InvalidArgumentException ex) {
+        logger.warn("Invalid argument: {}", ex.getMessage());
+        Map<String, String> errors = new HashMap<>();
+        errors.put(ex.getName(), ex.getMessage());
+        return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(ex.getMessage(), errors)));
+    }
 
     @ExceptionHandler(WebExchangeBindException.class)
     public Mono<ResponseEntity<ErrorResponse>> handleValidationExceptions(WebExchangeBindException ex) {

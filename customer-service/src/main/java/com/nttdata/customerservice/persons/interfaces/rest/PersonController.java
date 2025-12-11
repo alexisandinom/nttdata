@@ -30,11 +30,7 @@ public class PersonController {
     public Mono<ResponseEntity<PersonResponseDTO>> getPerson(@PathVariable String identification) {
         logger.info("Getting person with identification: {}", identification);
         return personManager.getPerson(identification)
-                .map(ResponseEntity::ok)
-                .onErrorResume(e -> {
-                    logger.error("Error getting person: {}", e.getMessage());
-                    return Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
-                });
+                .map(ResponseEntity::ok);
     }
 
     @PostMapping
@@ -43,12 +39,7 @@ public class PersonController {
             @RequestBody @Valid PersonRequestDTO request) {
         logger.info("Creating person with identification: {}", request.getIdentification());
         return personManager.storePerson(request)
-                .map(person -> ResponseEntity.status(HttpStatus.CREATED).body(person))
-                .onErrorResume(e -> {
-                    logger.error("Error creating person: {}", e.getMessage());
-                    return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                            .body((PersonResponseDTO) null));
-                });
+                .map(person -> ResponseEntity.status(HttpStatus.CREATED).body(person));
     }
 
     @PutMapping("/{identification}")
@@ -58,12 +49,7 @@ public class PersonController {
             @RequestBody @Valid PersonRequestDTO request) {
         logger.info("Updating person with identification: {}", identification);
         return personManager.updatePerson(request)
-                .map(ResponseEntity::ok)
-                .onErrorResume(e -> {
-                    logger.error("Error updating person: {}", e.getMessage());
-                    return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                            .body((PersonResponseDTO) null));
-                });
+                .map(ResponseEntity::ok);
     }
 
     @DeleteMapping("/{identification}")
@@ -71,10 +57,6 @@ public class PersonController {
     public Mono<ResponseEntity<Void>> deletePerson(@PathVariable String identification) {
         logger.info("Deleting person with identification: {}", identification);
         return personManager.deletePerson(identification)
-                .then(Mono.just(ResponseEntity.ok().<Void>build()))
-                .onErrorResume(e -> {
-                    logger.error("Error deleting person: {}", e.getMessage());
-                    return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).build());
-                });
+                .then(Mono.just(ResponseEntity.ok().<Void>build()));
     }
 }

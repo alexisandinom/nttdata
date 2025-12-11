@@ -44,11 +44,7 @@ public class ReportController {
         request.setEndDate(endDate);
 
         return reportManager.generateReport(request)
-                .map(ResponseEntity::ok)
-                .onErrorResume(e -> {
-                    logger.error("Error generating report: {}", e.getMessage());
-                    return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).build());
-                });
+                .map(ResponseEntity::ok);
     }
 }
 

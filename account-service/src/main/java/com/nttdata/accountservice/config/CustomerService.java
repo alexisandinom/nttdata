@@ -1,10 +1,13 @@
 package com.nttdata.accountservice.config;
 
-import com.nttdata.accountservice.accounts.domain.Account;
 import com.nttdata.core.exceptions.InvalidArgumentException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
 import java.util.Map;
@@ -13,13 +16,22 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * CustomerService maintains a local cache of customer information
  * based on Kafka events for eventual consistency.
- * In a production environment, this could also make REST calls to customer-service.
+ * If customer is not in cache, it makes a REST call to customer-service as fallback.
  */
 @Service
 public class CustomerService {
 
     private static final Logger logger = LoggerFactory.getLogger(CustomerService.class);
     private final Map<String, CachedCustomer> customerCache = new ConcurrentHashMap<>();
+    private final WebClient webClient;
+    private final String customerServiceUrl;
+
+    public CustomerService(@Value("${customer.service.url:http://localhost:8080}") String customerServiceUrl) {
+        this.customerServiceUrl = customerServiceUrl;
+        this.webClient = WebClient.builder()
+                .baseUrl(customerServiceUrl)
+                .build();
+    }
 
     public Mono<com.nttdata.accountservice.accounts.domain.CustomerReference> getCustomerByIdentification(String identification) {
         CachedCustomer cached = customerCache.get(identification);
@@ -28,14 +40,49 @@ public class CustomerService {
             return Mono.just(createCustomerFromCache(cached));
         }
         
-        // If not in cache, try to get from cache again (eventual consistency)
-        // In production, you might want to make a REST call to customer-service here
-        
-        // In a real scenario, you might make a REST call to customer-service here
-        // For now, we'll throw an exception if customer is not in cache
-        logger.warn("Customer not found in cache: {}", identification);
-        return Mono.error(new InvalidArgumentException("customerId", 
-                "Customer not found. Please ensure customer is created first."));
+        // If not in cache, make a REST call to customer-service as fallback
+        logger.info("Customer not found in cache: {}. Fetching from customer-service...", identification);
+        return fetchCustomerFromService(identification)
+                .doOnNext(customer -> {
+                    // Update cache with the fetched customer
+                    updateCustomerCache(customer.identification(), customer.name(), customer.state());
+                    logger.info("Customer fetched from service and cached: {}", identification);
+                })
+                .map(customer -> new com.nttdata.accountservice.accounts.domain.CustomerReference(
+                        customer.identification(),
+                        customer.identification(),
+                        customer.name(),
+                        customer.state()
+                ));
+    }
+
+    private Mono<CustomerResponse> fetchCustomerFromService(String identification) {
+        return webClient.get()
+                .uri("/api/v1/customers/{identification}", identification)
+                .retrieve()
+                .bodyToMono(CustomerResponse.class)
+                .onErrorResume(WebClientResponseException.class, ex -> {
+                    int statusCode = ex.getStatusCode().value();
+                    logger.warn("Customer service returned status {} for identification: {}. Response body: {}", 
+                            statusCode, identification, ex.getResponseBodyAsString());
+                    
+                    if (statusCode == HttpStatus.NOT_FOUND.value()) {
+                        logger.warn("Customer not found in customer-service: {}", identification);
+                        return Mono.error(new InvalidArgumentException("customerId",
+                                "Customer with identification " + identification + " not found. Please create the customer first."));
+                    }
+                    
+                    // For other HTTP errors, log details and return appropriate error
+                    logger.error("Error fetching customer from customer-service. Status: {}, Message: {}, Response: {}", 
+                            statusCode, ex.getMessage(), ex.getResponseBodyAsString());
+                    return Mono.error(new InvalidArgumentException("customerId",
+                            "Customer with identification " + identification + " not found. Please create the customer first."));
+                })
+                .onErrorResume(Exception.class, ex -> {
+                    logger.error("Unexpected error fetching customer from service: {}", ex.getMessage(), ex);
+                    return Mono.error(new InvalidArgumentException("customerId",
+                            "Customer with identification " + identification + " not found. Please create the customer first."));
+                });
     }
 
     public void updateCustomerCache(String identification, String name, boolean active) {
@@ -73,6 +120,14 @@ public class CustomerService {
             return active;
         }
     }
+
+    // DTO for Customer Service response
+    private record CustomerResponse(
+            String id,
+            String identification,
+            String name,
+            Boolean state
+    ) {}
 }
 
 

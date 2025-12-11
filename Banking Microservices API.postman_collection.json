@@ -1,0 +1,465 @@
+{
+	"info": {
+		"_postman_id": "8fdb188e-0c83-4a37-91cc-8b188ea21440",
+		"name": "Banking Microservices API",
+		"description": "Colección completa de pruebas para los microservicios de Banking (Customer Service y Account Service)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "34217508",
+		"_collection_link": "https://sfk-dev.postman.co/workspace/New-Team-Workspace~e2c919d4-600e-4c0b-85dd-e702d9cdfad9/collection/34217508-8fdb188e-0c83-4a37-91cc-8b188ea21440?action=share&source=collection_link&creator=34217508"
+	},
+	"item": [
+		{
+			"name": "Customer Service",
+			"item": [
+				{
+					"name": "Customers",
+					"item": [
+						{
+							"name": "GET Get Customer by ID",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url_customer}}/api/v1/customers/{{customer_identification}}",
+									"host": [
+										"{{base_url_customer}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"customers",
+										"{{customer_identification}}"
+									]
+								},
+								"description": "Obtiene un cliente por su número de identificación"
+							},
+							"response": []
+						},
+						{
+							"name": "POST Create Customer",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"if (pm.response.code === 201) {",
+											"    const response = pm.response.json();",
+											"    pm.collectionVariables.set(\"customer_identification\", response.identification);",
+											"}"
+										],
+										"type": "text/javascript",
+										"packages": {},
+										"requests": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"María Prado\",\n    \"gender\": \"FEMALE\",\n    \"age\": 28,\n    \"identification\": \"2300635246\",\n    \"address\": \"Valle Hermoso\",\n    \"phone\": \"0982653410\",\n    \"password\": \"password123\",\n    \"state\": true\n}"
+								},
+								"url": {
+									"raw": "{{base_url_customer}}/api/v1/customers",
+									"host": [
+										"{{base_url_customer}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"customers"
+									]
+								},
+								"description": "Crea un nuevo cliente (incluye la creación de la persona asociada)"
+							},
+							"response": []
+						},
+						{
+							"name": "PUT Update Customer",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"María Prado Valarezo\",\n    \"gender\": \"FEMALE\",\n    \"age\": 29,\n    \"identification\": \"{{customer_identification}}\",\n    \"address\": \"Valle Hermoso\",\n    \"phone\": \"0912345678\",\n    \"password\": \"newpassword456\",\n    \"state\": true\n}"
+								},
+								"url": {
+									"raw": "{{base_url_customer}}/api/v1/customers/{{customer_identification}}",
+									"host": [
+										"{{base_url_customer}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"customers",
+										"{{customer_identification}}"
+									]
+								},
+								"description": "Actualiza los datos de un cliente existente"
+							},
+							"response": []
+						},
+						{
+							"name": "DELETE Delete Customer",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{base_url_customer}}/api/v1/customers/{{customer_identification}}",
+									"host": [
+										"{{base_url_customer}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"customers",
+										"{{customer_identification}}"
+									]
+								},
+								"description": "Elimina un cliente por su número de identificación"
+							},
+							"response": []
+						}
+					],
+					"description": "Endpoints para gestión de clientes"
+				}
+			],
+			"description": "Microservicio de gestión de clientes y personas"
+		},
+		{
+			"name": "Account Service",
+			"item": [
+				{
+					"name": "Accounts",
+					"item": [
+						{
+							"name": "GET Get Account by Number",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url_account}}/api/v1/accounts/{{account_number}}",
+									"host": [
+										"{{base_url_account}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"accounts",
+										"{{account_number}}"
+									]
+								},
+								"description": "Obtiene una cuenta por su número"
+							},
+							"response": []
+						},
+						{
+							"name": "POST Create Account - Savings",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"if (pm.response.code === 201) {",
+											"    const response = pm.response.json();",
+											"    pm.collectionVariables.set(\"account_number\", response.number);",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"identification\": \"{{customer_identification}}\",\n    \"type\": \"SAVINGS_ACCOUNT\",\n    \"number\": \"123456789\",\n    \"initialBalance\": 1000.00,\n    \"statusAccount\": \"ACTIVE\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url_account}}/api/v1/accounts",
+									"host": [
+										"{{base_url_account}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"accounts"
+									]
+								},
+								"description": "Crea una nueva cuenta de ahorros. Nota: El cliente debe existir previamente en Customer Service."
+							},
+							"response": []
+						},
+						{
+							"name": "POST Create Account - Current",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"identification\": \"{{customer_identification}}\",\n    \"type\": \"CURRENT_ACCOUNT\",\n    \"number\": \"987654321\",\n    \"initialBalance\": 500.00,\n    \"statusAccount\": \"ACTIVE\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url_account}}/api/v1/accounts",
+									"host": [
+										"{{base_url_account}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"accounts"
+									]
+								},
+								"description": "Crea una nueva cuenta corriente"
+							},
+							"response": []
+						},
+						{
+							"name": "PUT Update Account Status",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"identification\": \"{{customer_identification}}\",\n    \"type\": \"SAVINGS_ACCOUNT\",\n    \"number\": \"{{account_number}}\",\n    \"initialBalance\": 1000.00,\n    \"statusAccount\": \"INACTIVE\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url_account}}/api/v1/accounts/{{account_number}}",
+									"host": [
+										"{{base_url_account}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"accounts",
+										"{{account_number}}"
+									]
+								},
+								"description": "Actualiza el estado de una cuenta (ACTIVE, INACTIVE, BLOCKED)"
+							},
+							"response": []
+						},
+						{
+							"name": "DELETE Delete Account",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{base_url_account}}/api/v1/accounts/{{account_number}}",
+									"host": [
+										"{{base_url_account}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"accounts",
+										"{{account_number}}"
+									]
+								},
+								"description": "Elimina una cuenta por su número"
+							},
+							"response": []
+						}
+					],
+					"description": "Endpoints para gestión de cuentas"
+				},
+				{
+					"name": "Movements",
+					"item": [
+						{
+							"name": "GET Get Movement by ID",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url_account}}/api/v1/movements/{{movement_id}}",
+									"host": [
+										"{{base_url_account}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"movements",
+										"{{movement_id}}"
+									]
+								},
+								"description": "Obtiene un movimiento (transacción) por su ID"
+							},
+							"response": []
+						},
+						{
+							"name": "POST Create Movement - Deposit",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"if (pm.response.code === 201) {",
+											"    const response = pm.response.json();",
+											"    pm.collectionVariables.set(\"movement_id\", response.id);",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"account\": \"{{account_number}}\",\n    \"type\": \"DEPOSIT\",\n    \"value\": 500.00\n}"
+								},
+								"url": {
+									"raw": "{{base_url_account}}/api/v1/movements",
+									"host": [
+										"{{base_url_account}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"movements"
+									]
+								},
+								"description": "Crea un movimiento de depósito (abono) en una cuenta"
+							},
+							"response": []
+						},
+						{
+							"name": "POST Create Movement - Withdraw",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"account\": \"{{account_number}}\",\n    \"type\": \"WITHDRAW\",\n    \"value\": 200.00\n}"
+								},
+								"url": {
+									"raw": "{{base_url_account}}/api/v1/movements",
+									"host": [
+										"{{base_url_account}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"movements"
+									]
+								},
+								"description": "Crea un movimiento de retiro. Nota: La cuenta debe tener saldo suficiente."
+							},
+							"response": []
+						}
+					],
+					"description": "Endpoints para gestión de movimientos (transacciones)"
+				},
+				{
+					"name": "Reports",
+					"item": [
+						{
+							"name": "GET Generate Report",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url_account}}/reports/{{customer_identification}}?startDate=2024-01-01&endDate=2024-12-31",
+									"host": [
+										"{{base_url_account}}"
+									],
+									"path": [
+										"reports",
+										"{{customer_identification}}"
+									],
+									"query": [
+										{
+											"key": "startDate",
+											"value": "2024-01-01",
+											"description": "Fecha de inicio (formato: YYYY-MM-DD)"
+										},
+										{
+											"key": "endDate",
+											"value": "2024-12-31",
+											"description": "Fecha de fin (formato: YYYY-MM-DD)"
+										}
+									]
+								},
+								"description": "Genera un reporte de estado de cuenta para un cliente en un rango de fechas"
+							},
+							"response": []
+						}
+					],
+					"description": "Endpoints para generación de reportes"
+				}
+			],
+			"description": "Microservicio de gestión de cuentas, movimientos y reportes"
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url_customer",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "base_url_account",
+			"value": "http://localhost:8081",
+			"type": "string"
+		},
+		{
+			"key": "customer_identification",
+			"value": "0987654321",
+			"type": "string"
+		},
+		{
+			"key": "person_identification",
+			"value": "1234567890",
+			"type": "string"
+		},
+		{
+			"key": "account_number",
+			"value": "123456789",
+			"type": "string"
+		},
+		{
+			"key": "movement_id",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

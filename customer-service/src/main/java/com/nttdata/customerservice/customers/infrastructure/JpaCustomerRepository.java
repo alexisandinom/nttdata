@@ -1,12 +1,12 @@
 package com.nttdata.customerservice.customers.infrastructure;
 
+import com.nttdata.core.exceptions.EntityNotFoundException;
 import com.nttdata.customerservice.customers.domain.Customer;
 import com.nttdata.customerservice.customers.domain.CustomerRepository;
 import com.nttdata.customerservice.customers.infrastructure.jpa.CustomerEntity;
 import com.nttdata.customerservice.customers.infrastructure.jpa.CustomerRepo;
 import com.nttdata.customerservice.persons.infrastructure.jpa.PersonEntity;
 import com.nttdata.customerservice.persons.infrastructure.jpa.PersonRepo;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 

@@ -71,8 +71,13 @@ public class CustomerManager {
     public Mono<CustomerResponseDTO> getCustomer(String identification) {
         logger.info("Getting customer with identification: {}", identification);
         return Mono.fromCallable(() -> {
-                    Customer customer = customerRepository.getByIdentification(identification);
-                    return customer;
+                    try {
+                        Customer customer = customerRepository.getByIdentification(identification);
+                        return customer;
+                    } catch (com.nttdata.core.exceptions.EntityNotFoundException e) {
+                        logger.warn("Customer not found: {}", identification);
+                        throw e; // Re-throw to ensure it propagates correctly
+                    }
                 })
                 .map(CustomerResponseDTO::new);
     }

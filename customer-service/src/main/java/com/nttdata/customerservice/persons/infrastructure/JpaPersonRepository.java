@@ -1,10 +1,10 @@
 package com.nttdata.customerservice.persons.infrastructure;
 
+import com.nttdata.core.exceptions.EntityNotFoundException;
 import com.nttdata.customerservice.persons.domain.Person;
 import com.nttdata.customerservice.persons.domain.PersonRepository;
 import com.nttdata.customerservice.persons.infrastructure.jpa.PersonEntity;
 import com.nttdata.customerservice.persons.infrastructure.jpa.PersonRepo;
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;

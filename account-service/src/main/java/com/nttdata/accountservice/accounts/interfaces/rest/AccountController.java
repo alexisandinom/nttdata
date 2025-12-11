@@ -30,11 +30,7 @@ public class AccountController {
     public Mono<ResponseEntity<AccountResponseDTO>> getAccount(@PathVariable String number) {
         logger.info("Getting account with number: {}", number);
         return accountManager.getAccount(number)
-                .map(ResponseEntity::ok)
-                .onErrorResume(e -> {
-                    logger.error("Error getting account: {}", e.getMessage());
-                    return Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
-                });
+                .map(ResponseEntity::ok);
     }
 
     @PostMapping
@@ -43,12 +39,7 @@ public class AccountController {
             @RequestBody @Valid AccountRequestDTO request) {
         logger.info("Creating account with number: {}", request.getNumber());
         return accountManager.storeAccount(request)
-                .map(account -> ResponseEntity.status(HttpStatus.CREATED).body(account))
-                .onErrorResume(e -> {
-                    logger.error("Error creating account: {}", e.getMessage());
-                    return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                            .body((AccountResponseDTO) null));
-                });
+                .map(account -> ResponseEntity.status(HttpStatus.CREATED).body(account));
     }
 
     @PutMapping("/{number}")
@@ -58,12 +49,7 @@ public class AccountController {
             @RequestBody @Valid AccountRequestDTO request) {
         logger.info("Updating account with number: {}", number);
         return accountManager.updateStatusAccount(request)
-                .map(ResponseEntity::ok)
-                .onErrorResume(e -> {
-                    logger.error("Error updating account: {}", e.getMessage());
-                    return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                            .body((AccountResponseDTO) null));
-                });
+                .map(ResponseEntity::ok);
     }
 
     @DeleteMapping("/{number}")
@@ -71,11 +57,7 @@ public class AccountController {
     public Mono<ResponseEntity<Void>> deleteAccount(@PathVariable String number) {
         logger.info("Deleting account with number: {}", number);
         return accountManager.deleteAccount(number)
-                .then(Mono.just(ResponseEntity.ok().<Void>build()))
-                .onErrorResume(e -> {
-                    logger.error("Error deleting account: {}", e.getMessage());
-                    return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).build());
-                });
+                .then(Mono.just(ResponseEntity.ok().<Void>build()));
     }
 }
 
