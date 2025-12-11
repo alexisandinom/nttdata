@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  mysql-customer:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: customerdb
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-customer-data:/var/lib/mysql
+
+  mysql-account:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: accountdb
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-account-data:/var/lib/mysql
+
+  customer-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.customer-service
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql-customer
+      - kafka
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-customer:3306/customerdb
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+
+  account-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.account-service
+    ports:
+      - "8081:8080"
+    depends_on:
+      - mysql-account
+      - kafka
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-account:3306/accountdb
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+
+volumes:
+  mysql-customer-data:
+  mysql-account-data:
+

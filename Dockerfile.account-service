@@ -1,0 +1,15 @@
+FROM gradle:7.6-jdk17 AS build
+WORKDIR /app
+COPY build.gradle settings.gradle ./
+COPY account-service/build.gradle ./account-service/
+COPY common/build.gradle ./common/
+COPY account-service/src ./account-service/src
+COPY common/src ./common/src
+RUN gradle :account-service:build -x test
+
+FROM openjdk:17-jre-slim
+WORKDIR /app
+COPY --from=build /app/account-service/build/libs/*.jar app.jar
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "app.jar"]
+

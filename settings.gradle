@@ -1,0 +1,5 @@
+rootProject.name = 'nttdata'
+
+include 'customer-service'
+include 'account-service'
+include 'common'
